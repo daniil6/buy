@@ -1,4 +1,8 @@
-#include <iostream>
+#include <curl/curl.h>
+#include <string>
+#include <thread>
+
+#include <windows.h>
 
 // BOOL Beep()
 // {
@@ -6,11 +10,7 @@
 //     DWORD dwDuration; // длительность звучания
 // }
 
-#include <curl/curl.h>
-#include <string>
-#include <thread>
-
-#include "windows.h"
+int g_count = 0;
 
 size_t writeFunction(void* ptr, size_t size, size_t nmemb, std::string* data)
 {
@@ -18,8 +18,23 @@ size_t writeFunction(void* ptr, size_t size, size_t nmemb, std::string* data)
     return size * nmemb;
 }
 
+void WriteFile(std::string buffer, int count)
+{
+    FILE* file;
+
+    std::string name = std::to_string(count).append(".html");
+
+    file = fopen(name.data(), "w");
+
+    fprintf(file, buffer.data());
+
+    fclose(file);
+}
+
 int main(int argc, char** argv)
 {
+    int count = 0;
+
     std::string response_string;
     std::string readBuffer;
     std::string headerData;
@@ -30,7 +45,12 @@ int main(int argc, char** argv)
     //                          "videokarta-palit-geforce-rtx-3080-ti-gamerock-ned308t019kb-1020g/";
 
     std::string string_url =
-        "https://www.dns-shop.ru/product/e2f76961adfe2ff1/videokarta-kfa2-geforce-rtx-3080-ti-sg-38iom5md99dk/";
+        //    "https://www.dns-shop.ru/product/e2f76961adfe2ff1/videokarta-kfa2-geforce-rtx-3080-ti-sg-38iom5md99dk/";
+
+        "https://www.dns-shop.ru/product/fbed7b887b263332/"
+        "videokarta-gigabyte-geforce-rtx-3080-gaming-oc-waterforce-wb-gv-n3080gamingoc-wb-10gd/";
+
+    // "www.google.com";
 
     std::string user_agent = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) "
                              "Chrome/0.A.B.C Safari/525.13";
@@ -59,8 +79,11 @@ int main(int argc, char** argv)
 
             curl_easy_perform(curl);
 
-            //int size = readBuffer.size();
-            int position = 0;
+            WriteFile(readBuffer, count++);
+
+            printf("succes: get");
+
+            /*int position = 0;
 
             if((position = readBuffer.find("price"), position) != -1) {
 
@@ -72,7 +95,7 @@ int main(int argc, char** argv)
 
             if((position = readBuffer.find("Купить")) != -1) {
                 std::cout << "Купить" << std::endl;
-            }
+            }*/
 
             std::this_thread::sleep_for(std::chrono::seconds(10));
         }
@@ -80,6 +103,7 @@ int main(int argc, char** argv)
         curl_easy_cleanup(curl);
         curl_global_cleanup();
     }
+
     // Beep(500, 1000);
 
     getchar();
